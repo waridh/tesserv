@@ -3,7 +3,7 @@
 
 use std::{fs::File, path::Path};
 
-struct LogStore {}
+pub struct LogStore {}
 
 struct LogStoreError {}
 
@@ -19,6 +19,8 @@ impl Default for LogStore {
     }
 }
 
+/**
+ */
 impl TryFrom<&Path> for LogStore {
     type Error = LogStoreError;
     fn try_from(path: &Path) -> Result<Self, Self::Error> {
