@@ -4,6 +4,7 @@ use server_runtime::run_server;
 use std::path::PathBuf;
 
 mod hasher;
+pub mod log_store;
 mod server_runtime;
 
 /// Server sided command line tooling
