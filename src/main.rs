@@ -6,6 +6,7 @@ use std::path::PathBuf;
 mod hasher;
 pub mod log_store;
 mod server_runtime;
+pub mod types;
 
 /// Server sided command line tooling
 #[derive(Parser, Debug)]

@@ -5,7 +5,6 @@ use std::convert::Infallible;
 use warp::{Filter, Rejection, Reply, http::Method, http::StatusCode};
 
 mod handler;
-pub mod types;
 
 async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
     let (code, message) = if err.is_not_found() {
