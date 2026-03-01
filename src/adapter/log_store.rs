@@ -1,14 +1,8 @@
 /*! module that provides async access to a log store.
  */
 
-use std::{
-    env,
-    fs::{File, create_dir_all},
-    io::Write,
-    path::Path,
-    path::PathBuf,
-    sync::Arc,
-};
+use super::file_system::ensure_parent;
+use std::{env, fs::File, io::Write, path::Path, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 fn application_data_home() -> Option<PathBuf> {
@@ -34,16 +28,8 @@ fn default_path_resolution() -> Result<PathBuf, LogStoreError> {
             "failed to find a default location for data store".to_string(),
         ));
     };
-    if let Some(p) = default_loc_realized.parent()
-        && !p.exists()
-    {
-        if let Err(e) = create_dir_all(p) {
-            return Err(LogStoreError::LogStoreInitError(e.to_string()));
-        }
-    } else {
-        return Err(LogStoreError::LogStoreInitError(
-            "Could not find the parent directory".to_string(),
-        ));
+    if let Err(e) = ensure_parent(&default_loc_realized) {
+        return Err(LogStoreError::LogStoreInitError(e.to_string()));
     }
     Ok(default_loc_realized)
 }

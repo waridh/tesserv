@@ -5,7 +5,9 @@ edition = "2024"
 
 [dependencies]
 blake3 = { version = "1.8.3", features = ["mmap", "rayon"] }
+bytes = "1.11.1"
 clap = { version = "4.5.60", features = ["derive"] }
+futures = { version = "0.3.32", default-features = false }
 reqwest = { version = "0.13.2", features = ["json"] }
 serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }

@@ -1,51 +1,49 @@
 /*! This module contains the async runtime for the REST API.
  */
 
-use std::convert::Infallible;
-use warp::{Filter, Rejection, Reply, http::Method, http::StatusCode};
+use warp::{
+    Filter, Reply,
+    http::{Method, StatusCode},
+};
 
+mod error;
 mod handler;
 
-async fn handle_rejection(err: Rejection) -> std::result::Result<impl Reply, Infallible> {
-    let (code, message) = if err.is_not_found() {
-        (StatusCode::NOT_FOUND, "Not Found".to_string())
-    } else if err.find::<warp::reject::PayloadTooLarge>().is_some() {
-        (StatusCode::BAD_REQUEST, "Payload too large".to_string())
-    } else {
-        /* this might have to be changed to something more robust */
-        eprintln!("unhandled error: {:?}", err);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Internal Server Error".to_string(),
-        )
-    };
-
-    Ok(warp::reply::with_status(message, code))
+async fn hello_fun(name: String) -> Result<impl Reply, warp::Rejection> {
+    Ok(warp::reply::with_status(
+        format!("hello, {}!", name),
+        StatusCode::OK,
+    ))
 }
 
 /** Entrypoint for the server runtime loop */
 pub async fn run_server(port: u16, max_file_size: Option<u64>) {
+    /* Resource initialization */
+    let registered_max_file_size = max_file_size.unwrap_or(10_000_000);
+    let download_dir_filter = warp::any().map(|| std::path::Path::new("/tmp/test-files2/"));
+    let allowed_types = std::sync::Arc::new(vec![
+        ("application/pdf", "pdf"),
+        ("image/png", "png"),
+        ("image/jpeg", "jpeg"),
+    ]);
+    let allowed_types_filter = warp::any().map(move || allowed_types.clone());
+
     let cors = warp::cors()
         .allow_any_origin()
         .allow_header("content-type")
         .allow_methods(&[Method::PUT, Method::GET, Method::POST, Method::DELETE]);
-    // GET /hello/warp => 200 OK with body "Hello, warp!"
-    let hello = warp::path!("hello" / String).map(|name| format!("Hello, {}!", name));
+    let hello = warp::path!("hello" / String).and_then(hello_fun);
     let post_submission = warp::post()
+        .and(download_dir_filter)
+        .and(allowed_types_filter)
         .and(warp::path("submit"))
-        .and(
-            warp::multipart::form().max_length(if let Some(x) = max_file_size {
-                x
-            } else {
-                5_000_000
-            }),
-        )
+        .and(warp::multipart::form().max_length(registered_max_file_size))
         .and(warp::path::end())
-        .map(|v| format!("got something"));
+        .and_then(handler::post_submit);
 
     let route = hello
         .or(post_submission)
         .with(cors)
-        .recover(handle_rejection);
+        .recover(error::return_error);
     warp::serve(route).run(([127, 0, 0, 1], port)).await;
 }

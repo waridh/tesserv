@@ -1,12 +1,17 @@
+/*!
+Entrypoint to the tesserv program.
+Configures the command line interface
+ */
+
 use clap::{Parser, Subcommand};
 use hasher::hash_file;
 use server_runtime::run_server;
 use std::path::PathBuf;
 
+mod adapter;
 mod hasher;
-pub mod log_store;
 mod server_runtime;
-pub mod types;
+mod types;
 
 /// Server sided command line tooling
 #[derive(Parser, Debug)]
@@ -21,13 +26,10 @@ pub struct Cli {
  */
 #[derive(Debug, Subcommand)]
 enum Commands {
+    /** utility that returns the hash of a target file */
+    Hash { path: PathBuf },
     /** Starts the server to serve */
-    Serve {
-        port: Option<u16>,
-    },
-    Hash {
-        path: PathBuf,
-    },
+    Serve { port: Option<u16> },
 }
 
 #[tokio::main]
