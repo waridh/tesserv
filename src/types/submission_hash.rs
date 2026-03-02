@@ -1,7 +1,7 @@
 use crate::hasher::hash_file;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct SubmissionHash(String);
 
 pub enum SubmissionHashError {

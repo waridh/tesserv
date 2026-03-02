@@ -3,7 +3,7 @@
 
 use super::error::RuntimeError;
 use crate::{
-    adapter::file_system::ensure_parent,
+    adapter::{file_system::ensure_parent, job_portal},
     types::{assignment_id::AssignmentId, job::Job},
 };
 use bytes::BufMut;
@@ -99,6 +99,7 @@ Handler for the submit post endpoint.
 Will download the file sent over the web into the specified directory.
  */
 pub async fn post_submit<P: AsRef<Path>>(
+    mut job_portal: job_portal::JobPortal,
     download_dir: P,
     allowed_types: std::sync::Arc<Vec<(&str, &str)>>,
     form: FormData,
@@ -106,8 +107,13 @@ pub async fn post_submit<P: AsRef<Path>>(
     let mut parts = form.into_stream();
     println!("handling submission");
     while let Some(Ok(p)) = parts.next().await {
-        let job_id = download_file_sequence(&download_dir, allowed_types.clone(), p).await?;
-        println!("working with job_id: {}", job_id);
+        let job = download_file_sequence(&download_dir, allowed_types.clone(), p).await?;
+        println!("working with job_id: {}", job);
+        job_portal
+            .submit(&job)
+            .await
+            .map_err(|_| RuntimeError::ExecutionFailure)?;
+        println!("submitted job");
     }
 
     Ok(warp::reply::with_status("received", StatusCode::OK))

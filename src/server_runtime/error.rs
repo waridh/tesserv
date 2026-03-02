@@ -13,6 +13,7 @@ use warp::{
 pub enum RuntimeError {
     DownloadFailure,
     InvalidFiletype,
+    ExecutionFailure,
 }
 
 impl Display for RuntimeError {
@@ -20,6 +21,7 @@ impl Display for RuntimeError {
         let value = match self {
             RuntimeError::DownloadFailure => "Failed to download file",
             RuntimeError::InvalidFiletype => "Incorrect file type",
+            RuntimeError::ExecutionFailure => "Failed to execute job",
         };
         write!(f, "{}", value)
     }
@@ -37,6 +39,9 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             RuntimeError::DownloadFailure => (error.to_string(), StatusCode::INTERNAL_SERVER_ERROR),
             RuntimeError::InvalidFiletype => {
                 (error.to_string(), StatusCode::UNSUPPORTED_MEDIA_TYPE)
+            }
+            RuntimeError::ExecutionFailure => {
+                (error.to_string(), StatusCode::INTERNAL_SERVER_ERROR)
             }
         };
         err
