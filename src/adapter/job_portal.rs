@@ -6,17 +6,21 @@ use crate::types::{job::Job, job_id::JobId, submission_hash::SubmissionHash};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
+mod setup;
+
 #[derive(Clone, Debug)]
 pub enum Error {
     DuplicateJob,
     MissingJob,
+    IOError(String),
 }
 
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         let val = match self {
-            Error::DuplicateJob => "Submitted a duplicate job",
-            Error::MissingJob => "Missing target job",
+            Error::DuplicateJob => "Submitted a duplicate job".to_string(),
+            Error::MissingJob => "Missing target job".to_string(),
+            Error::IOError(e) => format!("{}", e),
         };
         write!(f, "{}", val)
     }
