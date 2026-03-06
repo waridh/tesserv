@@ -108,7 +108,7 @@ pub async fn post_submit<P: AsRef<Path>>(
     println!("handling submission");
     while let Some(Ok(p)) = parts.next().await {
         let job = download_file_sequence(&download_dir, allowed_types.clone(), p).await?;
-        println!("working with job_id: {}", job);
+        println!("working with job_id: {}", job); // TODO: Swap these to logging
         job_portal
             .submit(&job)
             .await
@@ -116,5 +116,6 @@ pub async fn post_submit<P: AsRef<Path>>(
         println!("submitted job");
     }
 
+    // TODO: Swap the reply into sending the tuple of the hash and the score
     Ok(warp::reply::with_status("received", StatusCode::OK))
 }

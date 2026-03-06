@@ -17,11 +17,14 @@ async fn hello_fun(name: String) -> Result<impl Reply, warp::Rejection> {
     ))
 }
 
-/** Entrypoint for the server runtime loop */
+/** Entrypoint for the server runtime loop.
+Denotes the different routes that are accepted in the server.
+ */
 pub async fn run_server(port: u16, max_file_size: Option<u64>) {
     /* Resource initialization */
 
     let job_portal = JobPortal::new();
+    // TODO: Convert this to just the archive types
     let allowed_types = std::sync::Arc::new(vec![
         ("application/pdf", "pdf"),
         ("image/png", "png"),
@@ -37,6 +40,7 @@ pub async fn run_server(port: u16, max_file_size: Option<u64>) {
         .allow_header("content-type")
         .allow_methods(&[Method::PUT, Method::GET, Method::POST, Method::DELETE]);
 
+    // TODO: Remove the hello world route.
     let hello = warp::path!("hello" / String).and_then(hello_fun);
     let post_submission = warp::post()
         .and(job_portal_filter)

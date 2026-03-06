@@ -55,12 +55,31 @@ impl JobPortal {
         self.active_jobs.read().await.get(key).cloned()
     }
 
+    /**
+    Mutator function that sets the status of a job
+     */
+    async fn update_status(&mut self, key: &JobId, value: JobStatus) -> Result<(), Error> {
+        let store = self.active_jobs.write().await;
+        if store.contains_key(key) {
+            let prev_val = store.get_mut(key);
+            match prev_val {
+                None => Err(Error::MissingJob),
+                Some((_, jstatus)) => {
+                    *jstatus = value;
+                    Ok(())
+                }
+            }
+        } else {
+            Err(Error::MissingJob)
+        }
+    }
+
     pub async fn contains(&self, key: &JobId) -> bool {
         self.get(key).await.is_some()
     }
 
     /**
-    Function that submits a job to the JobPortal
+    Function that submits a job to the JobPortal.
      */
     pub async fn submit(&mut self, j: &Job) -> Result<(), Error> {
         let id = j.job_id().clone();
