@@ -22,7 +22,7 @@ pub struct Cli {
     command: Commands,
 }
 
-/* Denotes the different subcommands that are available for the user to invoke
+/** Denotes the different subcommands that are available for the user to invoke
  */
 #[derive(Debug, Subcommand)]
 enum Commands {

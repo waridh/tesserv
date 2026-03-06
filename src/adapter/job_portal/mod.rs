@@ -59,7 +59,7 @@ impl JobPortal {
     Mutator function that sets the status of a job
      */
     async fn update_status(&mut self, key: &JobId, value: JobStatus) -> Result<(), Error> {
-        let store = self.active_jobs.write().await;
+        let mut store = self.active_jobs.write().await;
         if store.contains_key(key) {
             let prev_val = store.get_mut(key);
             match prev_val {
