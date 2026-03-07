@@ -1,8 +1,16 @@
 /*!
 Module that provides file downloading capabilities through HTTP
  */
-use super::*;
-use crate::types::submission_type::SubmissionType;
+use crate::{
+    adapter::file_system::ensure_parent,
+    server_runtime::error::RuntimeError,
+    types::{assignment_id::AssignmentId, job::Job, submission_type::SubmissionType},
+};
+use bytes::BufMut;
+use futures::TryStreamExt;
+use std::{path::Path, sync::Arc};
+use uuid::Uuid;
+use warp::multipart::Part;
 
 /**
 Function that builds the

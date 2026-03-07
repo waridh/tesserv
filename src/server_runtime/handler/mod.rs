@@ -1,20 +1,11 @@
-/*! Module that provides handlers for the different endpoints
+/*!
+Module that provides handlers for the different endpoints
  */
 
-use super::error::RuntimeError;
-use crate::{
-    adapter::{file_system::ensure_parent, job_portal},
-    types::{assignment_id::AssignmentId, job::Job},
-};
-use bytes::BufMut;
+use crate::adapter::job_portal;
 use futures::{StreamExt, TryStreamExt};
-use std::{path::Path, sync::Arc};
-use uuid::Uuid;
-use warp::{
-    Reply,
-    http::StatusCode,
-    multipart::{FormData, Part},
-};
+use std::path::Path;
+use warp::{Reply, http::StatusCode, multipart::FormData};
 
 mod download;
 mod setup;
