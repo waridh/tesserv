@@ -4,7 +4,10 @@ Module that provides file downloading capabilities through HTTP
 use crate::{
     adapter::fs::asynchronous::ensure_parent,
     server_runtime::error::RuntimeError,
-    types::{assignment_id::AssignmentId, job::Job, submission_type::SubmissionType},
+    types::{
+        assignment_id::AssignmentId, job::Job, submission_hash::SubmissionHash,
+        submission_type::SubmissionType,
+    },
 };
 use bytes::BufMut;
 use futures::TryStreamExt;
@@ -59,12 +62,7 @@ fn get_file_extension(
     content_type
         .and_then(|x| filter_files_return_suffix(&allowed_types, x))
         .map(|v| v.to_owned())
-        .ok_or_else(|| {
-            /* fallback logic on the filename */
-
-            eprintln!("invalid file type");
-            RuntimeError::InvalidFiletype
-        })
+        .ok_or(RuntimeError::InvalidFiletype)
         .or_else(|e| {
             filename
                 .and_then(|v| match SubmissionType::try_from(v) {
@@ -88,17 +86,20 @@ pub async fn download_file_sequence<P: AsRef<Path>>(
     let job_uuid = Uuid::new_v4();
     let file_name = format!("{}.{}", &job_uuid, file_ending);
     let target_path = download_dir.as_ref().join(&file_name);
-    download_file_part(&target_path, p)
-        .await
-        .map(|_| {
-            Job::new(
-                job_uuid,
-                AssignmentId::new("something".to_string()),
-                target_path,
-            )
-        })
-        .map_err(|e| {
-            eprintln!("{}", e.to_string());
-            e
-        })
+    download_file_part(&target_path, p).await.map_err(|e| {
+        eprintln!("{}", e.to_string());
+        e
+    })?;
+    let path_ref = target_path.clone();
+    let file_hash = tokio::task::spawn_blocking(move || {
+        SubmissionHash::try_from(path_ref.as_path()).or_else(|_| Err(RuntimeError::HashingFailure))
+    })
+    .await
+    .map_err(|_| RuntimeError::HashingFailure)??;
+    Ok(Job::new(
+        job_uuid,
+        AssignmentId::new("something".to_string()),
+        target_path,
+        file_hash,
+    ))
 }

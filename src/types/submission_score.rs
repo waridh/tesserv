@@ -2,6 +2,7 @@
 Module that provides the type for the submission scored
  */
 
+use serde::Serialize;
 use std::{
     borrow::Cow,
     fmt::{Display, Formatter},
@@ -31,7 +32,7 @@ impl From<std::num::ParseIntError> for Error {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct SubmissionScore(u16, u16);
 
 impl SubmissionScore {
@@ -80,6 +81,15 @@ impl TryFrom<Cow<'_, str>> for SubmissionScore {
     }
 }
 
+impl TryFrom<&Cow<'_, str>> for SubmissionScore {
+    type Error = Error;
+
+    fn try_from(value: &Cow<'_, str>) -> Result<Self, Self::Error> {
+        let str_ref = value.as_ref();
+        Self::try_from(str_ref)
+    }
+}
+
 impl Into<f32> for SubmissionScore {
     fn into(self) -> f32 {
         self.as_f32()
@@ -103,6 +113,7 @@ mod test {
             ("11/11", SubmissionScore(11, 11)),
             ("10/11 ", SubmissionScore(10, 11)),
             ("10/11\n", SubmissionScore(10, 11)),
+            ("0/1 ", SubmissionScore(0, 1)),
         ];
 
         for (input, expected) in tests {

@@ -2,7 +2,10 @@
 Module that provides the facilities to execute jobs
  */
 
-use crate::types::{assignment_config::AssignmentConfig, job::Job, submission_score};
+use crate::types::{
+    assignment_config::AssignmentConfig, completion_receipt::CompletionReceipt, job::Job,
+    submission_score,
+};
 use std::path::{Path, PathBuf};
 use tokio::process;
 
@@ -11,8 +14,10 @@ mod setup;
 #[derive(Clone, Debug)]
 pub enum Error {
     SetupError(setup::Error),
+    NoMarkingScripts,
     CannotFindMarkingScript((PathBuf, String)),
-    MarkingScriptFailure(String),
+    MarkingScriptExecutionFailure(String),
+    ScoreParsingError,
 }
 
 impl std::fmt::Display for Error {
@@ -26,7 +31,11 @@ impl std::fmt::Display for Error {
                     s
                 )
             }
-            Error::MarkingScriptFailure(v) => format!("marking script failure: {}", v),
+            Error::MarkingScriptExecutionFailure(v) => format!("marking script failure: {}", v),
+            Error::ScoreParsingError => format!("failed to parse the marking script"),
+            Error::NoMarkingScripts => {
+                format!("there is no marking script in the assignment configuration")
+            }
         };
         write!(f, "{}", value)
     }
@@ -43,7 +52,7 @@ impl From<setup::Error> for Error {
 /**
 Function that executes submitted jobs.
  */
-pub async fn execute(assign_conf: AssignmentConfig, job: Job) -> Result<f32, Error> {
+pub async fn execute(assign_conf: AssignmentConfig, job: Job) -> Result<CompletionReceipt, Error> {
     /* TODO: Need to move the execution path to be injected. */
     let base_dir = Path::new("/tmp/tesserv");
     let workspace = setup::setup_job(base_dir, &job)
@@ -51,20 +60,32 @@ pub async fn execute(assign_conf: AssignmentConfig, job: Job) -> Result<f32, Err
         .map_err(|e| Error::SetupError(e))?;
     let tests = assign_conf.as_ref();
     if tests.len() == 0 {
-        return Ok(0.0);
+        return Err(Error::NoMarkingScripts);
     }
     let test = tests[0]
         .as_path()
         .canonicalize()
         .map_err(|e| Error::CannotFindMarkingScript((tests[0].clone(), e.to_string())))?;
-    let out = process::Command::new(test)
+    let out = process::Command::new(&test)
         .current_dir(workspace.as_path())
         .output()
         .await
-        .map_err(|e| Error::MarkingScriptFailure(e.to_string()))?;
-    let score = submission_score::SubmissionScore::try_from(String::from_utf8_lossy(&out.stdout))
-        .map_err(|e| Error::MarkingScriptFailure(e.to_string()))?;
-    println!("{}", String::from_utf8_lossy(&out.stdout));
+        .map_err(|e| {
+            Error::MarkingScriptExecutionFailure(format!(
+                "unable to execute {} with message {}",
+                test.display(),
+                e
+            ))
+        })?;
+    let test_out = String::from_utf8_lossy(&out.stdout);
+    let score = submission_score::SubmissionScore::try_from(&test_out).map_err(|e| {
+        eprintln!(
+            "failed to parse:\n{}\nwith the following reason: {}",
+            &test_out, e
+        );
+        Error::ScoreParsingError
+    })?;
+    println!("{}", score);
 
-    Ok(0.0)
+    Ok(CompletionReceipt::from((&job, &score)))
 }

@@ -2,7 +2,7 @@
 Module with the model of the job.
  */
 
-use super::{assignment_id::AssignmentId, job_id::JobId};
+use super::{assignment_id::AssignmentId, job_id::JobId, submission_hash::SubmissionHash};
 use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
@@ -11,6 +11,7 @@ pub struct Job {
     job_id: JobId,
     assignment_id: AssignmentId,
     submission_location: PathBuf,
+    submission_hash: SubmissionHash,
 }
 
 impl Job {
@@ -18,12 +19,14 @@ impl Job {
         job_id: U,
         assignment_id: AssignmentId,
         submission_location: PathBuf,
+        submission_hash: SubmissionHash,
     ) -> Self {
         let job_id_aux = JobId::from(job_id.as_ref());
         Self {
             job_id: job_id_aux,
             assignment_id,
             submission_location,
+            submission_hash,
         }
     }
 
@@ -37,6 +40,9 @@ impl Job {
 
     pub fn submission_location(&self) -> &Path {
         self.submission_location.as_path()
+    }
+    pub fn submission_hash(&self) -> &SubmissionHash {
+        &self.submission_hash
     }
 }
 

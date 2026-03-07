@@ -1,19 +1,18 @@
+/*!
+Module with that provides the data structure for the completion
+ */
 use super::{
-    assignment_id::AssignmentId, submission_hash::SubmissionHash, submission_score::SubmissionScore,
+    assignment_id::AssignmentId, job, submission_hash::SubmissionHash,
+    submission_score::SubmissionScore,
 };
+use serde::Serialize;
 use std::fmt::{Display, Formatter};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct CompletionReceipt {
     assignment_id: AssignmentId,
     hash: SubmissionHash,
     score: SubmissionScore,
-}
-
-impl CompletionReceipt {
-    pub fn entry_string(&self) -> String {
-        format!("{} {}", self.hash, self.score)
-    }
 }
 
 impl From<(AssignmentId, SubmissionHash, SubmissionScore)> for CompletionReceipt {
@@ -30,6 +29,12 @@ impl From<(&AssignmentId, &SubmissionHash, &SubmissionScore)> for CompletionRece
         (assignment_id, hash, score): (&AssignmentId, &SubmissionHash, &SubmissionScore),
     ) -> Self {
         Self::from((assignment_id.clone(), hash.clone(), score.clone()))
+    }
+}
+
+impl From<(&job::Job, &SubmissionScore)> for CompletionReceipt {
+    fn from((j, ss): (&job::Job, &SubmissionScore)) -> Self {
+        Self::from((j.assignment_id(), j.submission_hash(), ss))
     }
 }
 

@@ -13,6 +13,7 @@ use warp::{
 pub enum RuntimeError {
     DownloadFailure,
     InvalidFiletype,
+    HashingFailure,
     ExecutionFailure(String),
 }
 
@@ -22,6 +23,7 @@ impl Display for RuntimeError {
             RuntimeError::DownloadFailure => "Failed to download file".to_string(),
             RuntimeError::InvalidFiletype => "Incorrect file type".to_string(),
             RuntimeError::ExecutionFailure(x) => format!("Failed to execute job: {}", x),
+            RuntimeError::HashingFailure => format!("failed to hash the received file"),
         };
         write!(f, "{}", value)
     }
@@ -43,6 +45,10 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             RuntimeError::ExecutionFailure(..) => (
                 "failed to execute submission".to_string(),
                 StatusCode::INTERNAL_SERVER_ERROR,
+            ),
+            RuntimeError::HashingFailure => (
+                format!("unable to process submission"),
+                StatusCode::BAD_REQUEST,
             ),
         };
         err

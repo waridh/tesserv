@@ -3,12 +3,13 @@ Module that provides handlers for the different endpoints
  */
 
 use crate::{
-    adapter::job_portal, server_runtime::error::RuntimeError,
-    types::assignment_config::AssignmentConfig,
+    adapter::job_portal,
+    server_runtime::error::RuntimeError,
+    types::{assignment_config::AssignmentConfig, submission_hash},
 };
 use futures::{StreamExt, TryStreamExt};
 use std::path::Path;
-use warp::{Reply, http::StatusCode, multipart::FormData};
+use warp::{Reply, multipart::FormData};
 
 mod download;
 mod execute;
@@ -31,15 +32,17 @@ pub async fn post_submit<P: AsRef<Path>>(
     while let Some(Ok(p)) = parts.next().await {
         let job = download::download_file_sequence(&download_dir, allowed_types.clone(), p).await?;
         println!("working with job_id: {}", job); // TODO: Swap these to logging
-        execute::execute(
-            AssignmentConfig::from(vec![Path::new("./tests/scripts/always_success.sh")]),
+        let score = execute::execute(
+            AssignmentConfig::from(vec![Path::new("./tests/scripts/verify_hello_world.sh")]),
             job,
         )
         .await
-        .map_err(|e| RuntimeError::ExecutionFailure(e.to_string()))?;
+        .map_err(|e| {
+            eprintln!("{}", e);
+            RuntimeError::ExecutionFailure(e.to_string())
+        })?;
         println!("executed job");
+        return Ok(warp::reply::json(&score));
     }
-
-    // TODO: Swap the reply into sending the tuple of the hash and the score
-    Ok(warp::reply::with_status("received", StatusCode::OK))
+    Err(RuntimeError::DownloadFailure.into())
 }
