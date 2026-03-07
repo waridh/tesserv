@@ -1,7 +1,7 @@
 /*! module that provides async access to a log store.
  */
 
-use super::file_system::ensure_parent;
+use super::fs::standard::ensure_parent;
 use std::{env, fs::File, io::Write, path::Path, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 

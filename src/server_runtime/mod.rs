@@ -2,10 +2,7 @@
  */
 
 use crate::adapter::job_portal::JobPortal;
-use warp::{
-    Filter, Reply,
-    http::{Method, StatusCode},
-};
+use warp::{Filter, http::Method};
 
 mod error;
 mod handler;

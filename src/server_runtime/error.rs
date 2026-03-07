@@ -13,15 +13,15 @@ use warp::{
 pub enum RuntimeError {
     DownloadFailure,
     InvalidFiletype,
-    ExecutionFailure,
+    ExecutionFailure(String),
 }
 
 impl Display for RuntimeError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         let value = match self {
-            RuntimeError::DownloadFailure => "Failed to download file",
-            RuntimeError::InvalidFiletype => "Incorrect file type",
-            RuntimeError::ExecutionFailure => "Failed to execute job",
+            RuntimeError::DownloadFailure => "Failed to download file".to_string(),
+            RuntimeError::InvalidFiletype => "Incorrect file type".to_string(),
+            RuntimeError::ExecutionFailure(x) => format!("Failed to execute job: {}", x),
         };
         write!(f, "{}", value)
     }
@@ -40,9 +40,10 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             RuntimeError::InvalidFiletype => {
                 (error.to_string(), StatusCode::UNSUPPORTED_MEDIA_TYPE)
             }
-            RuntimeError::ExecutionFailure => {
-                (error.to_string(), StatusCode::INTERNAL_SERVER_ERROR)
-            }
+            RuntimeError::ExecutionFailure(..) => (
+                "failed to execute submission".to_string(),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ),
         };
         err
     } else if r.is_not_found() {

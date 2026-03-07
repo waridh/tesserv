@@ -1,23 +1,5 @@
-use std::{
-    fmt::{Display, Formatter},
-    fs::create_dir_all,
-    path::Path,
-};
-
-pub enum FileSystemError {
-    UnresolvedPath,
-    Failure(String),
-}
-
-impl Display for FileSystemError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        let value = match self {
-            FileSystemError::UnresolvedPath => "could not resolve path,",
-            FileSystemError::Failure(s) => s,
-        };
-        write!(f, "{}", value)
-    }
-}
+use super::error::FileSystemError;
+use std::{fs::create_dir_all, path::Path};
 
 /**
 Helper function that takes in a path, and ensures that the parent path exists.

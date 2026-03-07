@@ -2,7 +2,7 @@
 Module that provides file downloading capabilities through HTTP
  */
 use crate::{
-    adapter::file_system::ensure_parent,
+    adapter::fs::asynchronous::ensure_parent,
     server_runtime::error::RuntimeError,
     types::{assignment_id::AssignmentId, job::Job, submission_type::SubmissionType},
 };
@@ -28,7 +28,7 @@ async fn download_file_part<P: AsRef<Path>>(target: P, p: Part) -> Result<(), Ru
             RuntimeError::DownloadFailure
         })?;
 
-    ensure_parent(&target).map_err(|e| {
+    ensure_parent(&target).await.map_err(|e| {
         eprint!("error with parent directory: {}", e);
         RuntimeError::DownloadFailure
     })?;
