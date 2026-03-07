@@ -1,11 +1,19 @@
-/*!
-Module that is responsible for setting up the workspace for the workers
- */
-
-use super::Error;
 use crate::types::job::Job;
 use std::path::Path;
 use tokio::{fs, process};
+
+pub enum Error {
+    IOError(String),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let value = match self {
+            Self::IOError(s) => s,
+        };
+        write!(f, "{}", value)
+    }
+}
 
 /**
 helper function that creates a directory.

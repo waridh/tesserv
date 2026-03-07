@@ -10,13 +10,6 @@ use warp::{
 mod error;
 mod handler;
 
-async fn hello_fun(name: String) -> Result<impl Reply, warp::Rejection> {
-    Ok(warp::reply::with_status(
-        format!("hello, {}!", name),
-        StatusCode::OK,
-    ))
-}
-
 /** Entrypoint for the server runtime loop.
 Denotes the different routes that are accepted in the server.
  */
@@ -29,6 +22,7 @@ pub async fn run_server(port: u16, max_file_size: Option<u64>) {
         ("application/pdf", "pdf"),
         ("image/png", "png"),
         ("image/jpeg", "jpeg"),
+        ("application/x-tar", "tar"),
     ]);
     let registered_max_file_size = max_file_size.unwrap_or(10_000_000);
     let download_dir_filter = warp::any().map(|| std::path::Path::new("/tmp/test-files2/"));
@@ -41,7 +35,6 @@ pub async fn run_server(port: u16, max_file_size: Option<u64>) {
         .allow_methods(&[Method::PUT, Method::GET, Method::POST, Method::DELETE]);
 
     // TODO: Remove the hello world route.
-    let hello = warp::path!("hello" / String).and_then(hello_fun);
     let post_submission = warp::post()
         .and(job_portal_filter)
         .and(download_dir_filter)
@@ -51,9 +44,6 @@ pub async fn run_server(port: u16, max_file_size: Option<u64>) {
         .and(warp::path::end())
         .and_then(handler::post_submit);
 
-    let route = hello
-        .or(post_submission)
-        .with(cors)
-        .recover(error::return_error);
+    let route = post_submission.with(cors).recover(error::return_error);
     warp::serve(route).run(([127, 0, 0, 1], port)).await;
 }

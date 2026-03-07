@@ -6,8 +6,6 @@ use crate::types::{job::Job, job_id::JobId, submission_hash::SubmissionHash};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-mod setup;
-
 #[derive(Clone, Debug)]
 pub enum Error {
     DuplicateJob,
