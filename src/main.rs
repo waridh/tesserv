@@ -37,6 +37,20 @@ enum Commands {
 
     /** verifies the correctness of a configuration file */
     Verify { path: PathBuf },
+
+    /**
+    Looks up a submission in the server logs
+     */
+    Query {
+        /**
+        The assignment endpoint being queried
+         */
+        assignment_id: types::assignment_id::AssignmentId,
+        /**
+        The submission hash being queried
+         */
+        submission_hash: types::submission_hash::SubmissionHash,
+    },
 }
 
 #[tokio::main]
@@ -55,7 +69,12 @@ async fn main() {
                     );
                     std::process::exit(-1)
                 }
-                Ok(x) => run_server(run_port, x, None).await,
+                Ok(x) => {
+                    if let Err(e) = run_server(run_port, x, None).await {
+                        eprintln!("{e}");
+                        std::process::exit(-1)
+                    }
+                }
             }
         }
         Commands::Hash { path } => {
@@ -87,6 +106,26 @@ async fn main() {
                         x
                     );
                     std::process::exit(0)
+                }
+            }
+        }
+        Commands::Query {
+            assignment_id,
+            submission_hash,
+        } => {
+            let store = adapter::log_store::LogStore::try_new();
+            match store {
+                Err(e) => {
+                    eprintln!("unable to access the log: {e}");
+                    std::process::exit(-1)
+                }
+                Ok(x) => {
+                    if let Some(y) = x.query_score((&assignment_id, &submission_hash)).await {
+                        println!("{y}")
+                    } else {
+                        eprintln!("could not find the score");
+                        std::process::exit(-1)
+                    }
                 }
             }
         }

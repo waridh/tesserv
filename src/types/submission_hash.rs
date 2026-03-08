@@ -24,6 +24,18 @@ impl Display for SubmissionHashError {
 
 impl std::error::Error for SubmissionHashError {}
 
+impl SubmissionHash {
+    pub fn from_hash_string(s: String) -> Self {
+        Self(s)
+    }
+}
+
+impl From<String> for SubmissionHash {
+    fn from(value: String) -> Self {
+        Self(value.trim().to_string())
+    }
+}
+
 impl TryFrom<&Path> for SubmissionHash {
     type Error = SubmissionHashError;
 

@@ -15,6 +15,12 @@ pub struct CompletionReceipt {
     score: SubmissionScore,
 }
 
+impl CompletionReceipt {
+    pub fn is_this(&self, (assign_id, sub_hash): (&AssignmentId, &SubmissionHash)) -> bool {
+        *assign_id == self.assignment_id && *sub_hash == self.hash
+    }
+}
+
 impl From<(AssignmentId, SubmissionHash, SubmissionScore)> for CompletionReceipt {
     fn from((assignment_id, hash, score): (AssignmentId, SubmissionHash, SubmissionScore)) -> Self {
         Self {

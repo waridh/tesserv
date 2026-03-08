@@ -16,6 +16,7 @@ pub enum RuntimeError {
     HashingFailure,
     ExecutionFailure(String),
     InvalidAssignmentId(String),
+    ReceiptLoggingFailure(String),
 }
 
 impl Display for RuntimeError {
@@ -27,6 +28,9 @@ impl Display for RuntimeError {
             RuntimeError::HashingFailure => format!("failed to hash the received file"),
             RuntimeError::InvalidAssignmentId(name) => {
                 format!("invalid assignment endpoint: {name}")
+            }
+            RuntimeError::ReceiptLoggingFailure(s) => {
+                format!("failure during completion logging: {s}")
             }
         };
         write!(f, "{}", value)
@@ -58,6 +62,9 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
                 format!("no valid assignment endpoint: {name}"),
                 StatusCode::NOT_FOUND,
             ),
+            RuntimeError::ReceiptLoggingFailure(_) => {
+                (format!("server failure"), StatusCode::INTERNAL_SERVER_ERROR)
+            }
         };
         err
     } else if r.is_not_found() {

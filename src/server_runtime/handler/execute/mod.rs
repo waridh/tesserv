@@ -52,7 +52,7 @@ impl From<setup::Error> for Error {
 /**
 Function that executes submitted jobs.
  */
-pub async fn execute(assign_conf: AssignmentConfig, job: Job) -> Result<CompletionReceipt, Error> {
+pub async fn execute(assign_conf: &AssignmentConfig, job: Job) -> Result<CompletionReceipt, Error> {
     /* TODO: Need to move the execution path to be injected. */
     let base_dir = Path::new("/tmp/tesserv");
     let workspace = setup::setup_job(base_dir, &job)

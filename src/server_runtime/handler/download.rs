@@ -78,6 +78,7 @@ Function that implements the download file stage of the POST submission
 endpoint.
  */
 pub async fn download_file_sequence<P: AsRef<Path>>(
+    assign_handle: &str,
     download_dir: P,
     allowed_types: Arc<Vec<(&str, &str)>>,
     p: Part,
@@ -98,7 +99,7 @@ pub async fn download_file_sequence<P: AsRef<Path>>(
     .map_err(|_| RuntimeError::HashingFailure)??;
     Ok(Job::new(
         job_uuid,
-        AssignmentId::new("something".to_string()),
+        AssignmentId::new(assign_handle.to_owned()),
         target_path,
         file_hash,
     ))

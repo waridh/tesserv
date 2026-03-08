@@ -3,9 +3,8 @@ Module that provides handlers for the different endpoints
  */
 
 use crate::{
-    adapter::{assignment_store, job_portal},
+    adapter::{assignment_store, job_portal, log_store},
     server_runtime::error::RuntimeError,
-    types::assignment_config::AssignmentConfig,
 };
 use futures::{StreamExt, TryStreamExt};
 use std::path::Path;
@@ -28,6 +27,7 @@ pub async fn post_submit<P: AsRef<Path>>(
     mut _job_portal: job_portal::JobPortal,
     download_dir: P,
     allowed_types: std::sync::Arc<Vec<(&str, &str)>>,
+    log_interface: log_store::LogStore,
 ) -> std::result::Result<impl Reply, warp::Rejection> {
     let assign_config = if let Some(x) = assign_store.get(assign_handle.as_str()).await {
         x
@@ -37,14 +37,26 @@ pub async fn post_submit<P: AsRef<Path>>(
     let mut parts = form.into_stream();
     println!("handling submission");
     while let Some(Ok(p)) = parts.next().await {
-        let job = download::download_file_sequence(&download_dir, allowed_types.clone(), p).await?;
+        let job = download::download_file_sequence(
+            &assign_handle,
+            &download_dir,
+            allowed_types.clone(),
+            p,
+        )
+        .await?;
         println!("working with job_id: {}", job); // TODO: Swap these to logging
-        let score = execute::execute(assign_config, job).await.map_err(|e| {
+        let score = execute::execute(&assign_config, job).await.map_err(|e| {
             eprintln!("{}", e);
             RuntimeError::ExecutionFailure(e.to_string())
         })?;
         println!("executed job");
-        return Ok(warp::reply::json(&score));
+        match log_interface.write_receipt(&score).await {
+            Ok(()) => return Ok(warp::reply::json(&score)),
+            Err(e) => {
+                eprintln!("failed to write result to log for reason: {e}");
+                return Err(RuntimeError::ReceiptLoggingFailure(e.to_string()))?;
+            }
+        }
     }
     Err(RuntimeError::DownloadFailure.into())
 }
