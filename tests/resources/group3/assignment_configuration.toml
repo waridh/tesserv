@@ -1,0 +1,7 @@
+[[assignments]]
+assignment_id = "abcd"
+marking_scripts = ["../../scripts/verify_hello_world.sh"]
+
+[[assignments]]
+assignment_id = "xfds"
+marking_scripts = ["../../scripts/always_success.sh"]

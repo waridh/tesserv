@@ -28,8 +28,12 @@ pub struct Cli {
 enum Commands {
     /** utility that returns the hash of a target file */
     Hash { path: PathBuf },
+
     /** Starts the server to serve */
     Serve { port: Option<u16> },
+
+    /** verifies the correctness of a configuration file */
+    Verify { path: PathBuf },
 }
 
 #[tokio::main]
@@ -44,8 +48,17 @@ async fn main() {
             let hash = hash_file(path);
             match hash {
                 Ok(x) => println!("{}", x),
-                Err(()) => eprintln!("unable to hash file"),
+                Err(()) => {
+                    eprintln!("unable to hash file");
+                    std::process::exit(-1)
+                }
             }
+        }
+        Commands::Verify { path } => {
+            println!(
+                "{:?}",
+                adapter::tesserv_config::TesservConfig::try_from_cmd_line(path)
+            );
         }
     }
 }

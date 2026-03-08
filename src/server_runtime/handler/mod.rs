@@ -3,9 +3,8 @@ Module that provides handlers for the different endpoints
  */
 
 use crate::{
-    adapter::job_portal,
-    server_runtime::error::RuntimeError,
-    types::{assignment_config::AssignmentConfig, submission_hash},
+    adapter::job_portal, server_runtime::error::RuntimeError,
+    types::assignment_config::AssignmentConfig,
 };
 use futures::{StreamExt, TryStreamExt};
 use std::path::Path;
