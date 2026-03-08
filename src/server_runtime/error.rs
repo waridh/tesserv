@@ -15,6 +15,7 @@ pub enum RuntimeError {
     InvalidFiletype,
     HashingFailure,
     ExecutionFailure(String),
+    InvalidAssignmentId(String),
 }
 
 impl Display for RuntimeError {
@@ -24,6 +25,9 @@ impl Display for RuntimeError {
             RuntimeError::InvalidFiletype => "Incorrect file type".to_string(),
             RuntimeError::ExecutionFailure(x) => format!("Failed to execute job: {}", x),
             RuntimeError::HashingFailure => format!("failed to hash the received file"),
+            RuntimeError::InvalidAssignmentId(name) => {
+                format!("invalid assignment endpoint: {name}")
+            }
         };
         write!(f, "{}", value)
     }
@@ -49,6 +53,10 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             RuntimeError::HashingFailure => (
                 format!("unable to process submission"),
                 StatusCode::BAD_REQUEST,
+            ),
+            RuntimeError::InvalidAssignmentId(name) => (
+                format!("no valid assignment endpoint: {name}"),
+                StatusCode::NOT_FOUND,
             ),
         };
         err

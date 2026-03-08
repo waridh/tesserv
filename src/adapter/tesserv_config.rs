@@ -2,13 +2,13 @@
 Module that provides adapter for reading configuration files
  */
 
+use crate::types::{assignment_config::AssignmentConfig, assignment_id::AssignmentId};
 use config;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
 pub enum Error {
-    NoSource,
     ParseFailure { file: PathBuf, msg: String },
     PathResolutionFailure(String),
 }
@@ -28,7 +28,6 @@ impl Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
-            Error::NoSource => format!("no configuration source"),
             Error::ParseFailure { file, msg } => {
                 format!(
                     "failed to parse config file {} with message {}",
@@ -50,12 +49,32 @@ pub struct AssignmentGroup {
     marking_scripts: Vec<PathBuf>,
 }
 
+impl AssignmentGroup {
+    fn assignment_id(&self) -> AssignmentId {
+        AssignmentId::from(self.assignment_id.as_str())
+    }
+
+    fn assignment_config(&self) -> AssignmentConfig {
+        AssignmentConfig::from(self.marking_scripts.as_slice())
+    }
+
+    pub fn config_pair(&self) -> (AssignmentId, AssignmentConfig) {
+        let first = self.assignment_id();
+        let second = self.assignment_config();
+        (first, second)
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct TesservConfig {
     assignments: Vec<AssignmentGroup>,
 }
 
 impl TesservConfig {
+    pub fn assignments<'a>(&'a self) -> &'a [AssignmentGroup] {
+        &self.assignments
+    }
+
     pub fn try_from_cmd_line<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,

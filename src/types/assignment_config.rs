@@ -40,6 +40,13 @@ impl From<Vec<&Path>> for AssignmentConfig {
     }
 }
 
+impl From<&[PathBuf]> for AssignmentConfig {
+    fn from(value: &[PathBuf]) -> Self {
+        let owned = value.to_owned();
+        Self::from(owned)
+    }
+}
+
 impl AsRef<[PathBuf]> for AssignmentConfig {
     fn as_ref(&self) -> &[PathBuf] {
         self.marking_scripts.as_slice()

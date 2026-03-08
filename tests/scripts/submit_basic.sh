@@ -10,6 +10,6 @@ tar_target="group1"
 tar -cvf "${tar_dest}" -C "${tar_directory}/${tar_target}" .
 
 # sending a curl request
-curl -v --location --request POST 'http://localhost:3030/submit' \
+curl -v --location --request POST 'http://localhost:3030/submission/hello-world' \
     --header 'Content-Type: multipart/form-data' \
     --form "file=@${tar_dest}"
