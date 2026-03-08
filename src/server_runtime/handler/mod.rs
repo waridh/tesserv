@@ -3,7 +3,7 @@ Module that provides handlers for the different endpoints
  */
 
 use crate::{
-    adapter::{assignment_store, job_portal, log_store},
+    adapter::{assignment_store, log_store},
     server_runtime::error::RuntimeError,
 };
 use futures::{StreamExt, TryStreamExt};
@@ -24,7 +24,6 @@ pub async fn post_submit<P: AsRef<Path>>(
     assign_handle: String,
     form: FormData,
     assign_store: assignment_store::AssignmentStore,
-    mut _job_portal: job_portal::JobPortal,
     download_dir: P,
     allowed_types: std::sync::Arc<Vec<(&str, &str)>>,
     log_interface: log_store::LogStore,

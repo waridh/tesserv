@@ -9,6 +9,7 @@ use uuid::Uuid;
 pub struct JobId(Uuid);
 
 impl JobId {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         JobId(Uuid::new_v4())
     }

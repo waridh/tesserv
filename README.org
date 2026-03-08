@@ -1,3 +1,35 @@
 #+title: Readme
 ** Overview
 Project that allows for remote testing of software systems.
+** Building and running
+/Currently, the project is in an infant state. We recommend running the project using/ =cargo=.
+*** Building
+To build the project, simply invoke =cargo build=.
+
+#+begin_src bash :exports code
+cargo build
+#+end_src
+
+*** Running
+
+#+begin_src bash :exports both :results output
+cargo run -- help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+System for validating programming assignments
+
+Usage: tesserv <COMMAND>
+
+Commands:
+  hash    utility that returns the hash of a target file
+  serve   Starts the server to serve. Requires a configuration file with the description of the assignment endpoints
+  verify  verifies the correctness of a configuration file
+  query   Looks up a submission in the server logs
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+#+end_example

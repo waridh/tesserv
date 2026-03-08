@@ -47,19 +47,6 @@ where
 }
 
 /**
-Helper function that will copy the submission to the target location
-asynchronously.
-
-NOTE: There will be a sandboxed and a non-sandboxed version of this function.
- */
-async fn copy_submission<P: AsRef<Path>>(from: P, to: P) -> Result<(), Error> {
-    fs::copy(from, to)
-        .await
-        .map(|_| ())
-        .map_err(|e| Error::IOError(e.to_string()))
-}
-
-/**
 Helper function that will unpack a target file in its current directory, and
 then remove the archive file
  */
@@ -118,6 +105,7 @@ where
     Ok(workspace)
 }
 
+#[allow(dead_code)]
 pub async fn teardown_job<P>(base_path: P, job: &Job) -> Result<(), Error>
 where
     P: AsRef<Path>,

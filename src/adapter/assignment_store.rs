@@ -24,6 +24,7 @@ impl AssignmentStore {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn contains_key<K>(&self, key: K) -> bool
     where
         K: Into<AssignmentId>,
