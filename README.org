@@ -1,6 +1,42 @@
 #+title: Readme
 ** Overview
 Project that allows for remote testing of software systems.
+*** WIP
+- [ ] Sand-boxing
+- [ ] Database logging
+- [ ] Configuration merging
+- [ ] Structured logging
+** Security
+This system does not have adequate sand-boxing for production use.
+It is currently ill advised to expose the Tesserv process to the public network.
+** Configuration
+Configuration of the Tesserv server is done through a =toml= file.
+The different assignment endpoints are described using the =assignments= array table.
+An example of its usage is available below.
+
+#+begin_src toml
+[[assignments]]
+assignment_id = "hello-world"
+marking_scripts = ["../../scripts/verify_hello_world.sh", "../../scripts/always_success.sh"]
+#+end_src
+
+Here, the =assignment_id= is the name of the endpoint that the server shall service.
+=marking_scripts= is an array of paths to the marking executable.
+The executable elements of the =marking_scripts= shall be ran in the submission workspace.
+The system shall parse the output of the executable for scoring.
+If there are multiple executable paths in the =marking_scripts=, then the final score shall be the sum of all the produced scores.
+If the path to the marking script is relative, then that value shall be parsed as relative to the location of the script.
+*** Marking Script
+**** Output format
+The output format of the marking script should *only* be the following.
+
+#+begin_example
+<score>/<total>
+#+end_example
+
+where =<score>= is the amount the submission scored, and =<total>= is the total amount of points that could be scored.
+** Available tools
+
 ** Building and running
 /Currently, the project is in an infant state. We recommend running the project using/ =cargo=.
 *** Building
