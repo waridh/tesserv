@@ -1,4 +1,13 @@
 #+title: Readme
+** Table of content :toc:
+  - [[#overview][Overview]]
+  - [[#security][Security]]
+  - [[#configuration][Configuration]]
+  - [[#available-tools][Available tools]]
+  - [[#building-and-running][Building and running]]
+  - [[#client-api][Client API]]
+  - [[#example][Example]]
+
 ** Overview
 Project that allows for remote testing of software systems.
 *** WIP
@@ -36,6 +45,16 @@ The output format of the marking script should *only* be the following.
 
 where =<score>= is the amount the submission scored, and =<total>= is the total amount of points that could be scored.
 ** Available tools
+Tesserv comes with a set of tools that facilitates marking and verification of the assignments.
+These tools are sub-commands of the main binary.
+The following are a brief description of each of these sub-commands.
+- hash :: This tool will produce the hash value of a file.
+  This tool will produce the hash value that the Tesserv server would return when servicing a submission request.
+- serve :: This tool shall start the Tesserv server, and begin servicing requests to endpoints that where specified in the server configuration.
+  The port in which the server shall listen can be optionally provided.
+- verify :: This tool shall verify the correctness of a configuration, which is provided as a path to the program.
+- query :: This tool will query for a score of a submission in the Tesserv log file.
+  Takes the assignment ID, and the hash of the file as parameters.
 
 ** Building and running
 /Currently, the project is in an infant state. We recommend running the project using/ =cargo=.
@@ -47,6 +66,13 @@ cargo build
 #+end_src
 
 *** Running
+To invoke =tesserv=, use cargo.
+
+#+begin_src bash :exports code
+cargo run --
+#+end_src
+
+To get a brief on how to use the system, run the =help= sub-command.
 
 #+begin_src bash :exports both :results output
 cargo run -- help
@@ -69,3 +95,48 @@ Options:
   -h, --help     Print help
   -V, --version  Print version
 #+end_example
+
+To get a brief on a specific sub-command, run that sub-command with the =--help= flag. For example:
+
+#+begin_src bash :exports both :results output
+cargo run -- query --help
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Looks up a submission in the server logs
+
+Usage: tesserv query <ASSIGNMENT_ID> <SUBMISSION_HASH>
+
+Arguments:
+  <ASSIGNMENT_ID>
+          The assignment endpoint being queried
+
+  <SUBMISSION_HASH>
+          The submission hash being queried
+
+Options:
+  -h, --help
+          Print help (see a summary with '-h')
+#+end_example
+
+** Client API
+The =tesserv= server shall expose endpoints in the following form:
+
+#+begin_example
+<fully-qualified-name>/submission/<assignment-id>
+#+end_example
+
+In real world use-case, the =assignment-id= should be given to students by the instructor of the course.
+Submissions shall be done through a =POST= request, with the =multipart/form-data= content type to this endpoint.
+Submissions must be =.tar= archive files.
+We provide an example =curl= invocation to a =tesserv= system below.
+
+#+begin_src bash
+curl -v --location --request POST 'http://localhost:3030/submission/hello-world' \
+    --header 'Content-Type: multipart/form-data' \
+    --form "file=@${submission_path}"
+#+end_src
+
+
+** Example
