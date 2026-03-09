@@ -1,7 +1,7 @@
 [[assignments]]
 assignment_id = "hello-world"
-marking_scripts = ["../../scripts/verify_hello_world.sh"]
+marking_scripts = ["../../scripts/verify_hello_world.sh", "../../scripts/always_success.sh"]
 
 [[assignments]]
-assignment_id = "xfds"
+assignment_id = "always-succeed"
 marking_scripts = ["../../scripts/always_success.sh"]

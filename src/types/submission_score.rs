@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::{
     borrow::Cow,
     fmt::{Display, Formatter},
+    ops::Add,
 };
 
 #[derive(Clone, Debug)]
@@ -69,6 +70,14 @@ impl TryFrom<&str> for SubmissionScore {
         let first = splitted[0].parse::<u16>()?;
         let second = splitted[1].parse::<u16>()?;
         Ok(Self::new(first, second))
+    }
+}
+
+impl Add for SubmissionScore {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(self.0 + rhs.0, self.1 + rhs.1)
     }
 }
 
